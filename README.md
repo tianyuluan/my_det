@@ -13,7 +13,7 @@
 ## 从零开始的构建一个目标检测算法，将整个学习过程分解为以下几个部分：
 ### Backbone
 - [x] ResNet50  
-- [  ] DarkNet53
+- [x] DarkNet53
 ### Neck
 - [x] FPN
 ### Head
