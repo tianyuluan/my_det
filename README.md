@@ -4,7 +4,7 @@
  * @email: 1558747541@qq.com
  * @github: https://github.com/tianyuluan/
  * @Date: 2021-10-01 19:36:28
- * @LastEditTime: 2021-10-02 21:25:41
+ * @LastEditTime: 2021-10-03 14:16:02
  * @motto: Still water run deep
  * @Description: Modify here please
  * @FilePath: /my_det/README.md
@@ -21,8 +21,8 @@
 - [ ] anchor-free-head
 - [ ] yolo-head
 ### Loss
-- [ ] Focal Loss
-- [ ] IoU Loss
+- [ ] GFocal Loss
+- [ ] GIoU Loss
 - [ ] L1 Loss
 ### OPS
 - [ ] nms_cuda
