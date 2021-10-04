@@ -6,7 +6,7 @@ LastEditors: Luan Tianyu
 email: 1558747541@qq.com
 github: https://github.com/tianyuluan/
 Date: 2021-10-02 21:12:48
-LastEditTime: 2021-10-04 11:50:41
+LastEditTime: 2021-10-04 21:02:51
 motto: Still water run deep
 Description: Modify here please
 FilePath: /my_det/head/anchor_free_head.py
@@ -89,4 +89,19 @@ class AnchorFreeHead(nn.Module):
             center_y = (gt_bbox[:, [1]] + gt_bbox[:, [3]]) * h_ratio / 2
             gt_centers = torch.cat((center_x, center_y), dim =1)
 
-            
+            for j, ct in enumerate(gt_centers):
+                ctx_int, cty_int = ct.int()
+                ctx, cty = ct
+                scale_box_h = (gt_bboxes[j][3] - gt_bboxes[j][1]) * h_ratio
+                scale_box_w = (gt_bboxes[j][2] - gt_bboxes[j][0]) * w_ratio         
+                radius = gaussian_radius([scale_box_h, scale_box_w], min_overlap=0.3)
+                 
+                 radius = max(0, int(radius))
+                 ind = gt_labels[j]
+
+
+
+    def gaussian_radius(self, det_size, min_overlap):
+        pass
+    
+    def gen_gaussian_target(self, heatmap, center, radius, k=1)
