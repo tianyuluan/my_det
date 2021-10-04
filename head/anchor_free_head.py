@@ -6,7 +6,7 @@ LastEditors: Luan Tianyu
 email: 1558747541@qq.com
 github: https://github.com/tianyuluan/
 Date: 2021-10-02 21:12:48
-LastEditTime: 2021-10-04 09:33:04
+LastEditTime: 2021-10-04 11:50:41
 motto: Still water run deep
 Description: Modify here please
 FilePath: /my_det/head/anchor_free_head.py
@@ -73,3 +73,20 @@ class AnchorFreeHead(nn.Module):
         w_ratio = float(img_w / feature_w)
         h_ratio = float(img_h / feature_h)
         
+        center_heatmap_target = gt_bboxes[-1].new_zeros(
+            [bs, self.num_classes, feature_h, feature_w])
+        wh_target = gt_bboxes[-1].new_zeros(
+            [bs, 2, feature_h, feature_w])
+        offset_target = gt_bboxes[-1].new_zeros(
+            [bs, 2, feature_h, feature_w])
+        wh_offset_target_weight = gt_bboxes.new_zeros(
+            [bs, 2, feature_h, feature_w])
+
+        for batch_id in range(bs):
+            gt_bbox = gt_bboxes[batch_id]
+            gt_label = gt_labels[batch_id]
+            center_x = (gt_bbox[:, [0]] + gt_bbox[:, [2]]) * w_ratio / 2
+            center_y = (gt_bbox[:, [1]] + gt_bbox[:, [3]]) * h_ratio / 2
+            gt_centers = torch.cat((center_x, center_y), dim =1)
+
+            
