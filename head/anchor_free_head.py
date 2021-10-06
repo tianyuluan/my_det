@@ -6,7 +6,7 @@ LastEditors: Luan Tianyu
 email: 1558747541@qq.com
 github: https://github.com/tianyuluan/
 Date: 2021-10-02 21:12:48
-LastEditTime: 2021-10-06 10:33:57
+LastEditTime: 2021-10-06 10:37:23
 motto: Still water run deep
 Description: Modify here please
 FilePath: /my_det/head/anchor_free_head.py
@@ -19,10 +19,9 @@ from loss import GIoULoss
 
 class AnchorFreeHead(nn.Module):
     def __init__(self, 
-                              in_channel=256,
-                              feat_channel=256,
-                              num_classes=80,
-                              ):
+        in_channel=256,
+        feat_channel=256,
+        num_classes=80,):
         super(AnchorFreeHead, self).__init__()
         self.num_classes = num_classes
         self.heatmap_head = self._build_head(in_channel, feat_channel, num_classes)
