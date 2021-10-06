@@ -6,7 +6,7 @@ LastEditors: Luan Tianyu
 email: 1558747541@qq.com
 github: https://github.com/tianyuluan/
 Date: 2021-10-02 21:12:48
-LastEditTime: 2021-10-06 10:30:38
+LastEditTime: 2021-10-06 10:33:57
 motto: Still water run deep
 Description: Modify here please
 FilePath: /my_det/head/anchor_free_head.py
@@ -45,8 +45,7 @@ class AnchorFreeHead(nn.Module):
     #     pass
     
     def forward(self, features):
-        return multi_apply(self.single_forward, features, 
-                                                    [i for i in range(len(features))])
+        return multi_apply(self.single_forward, features, [i for i in range(len(features))])
 
     def single_forward(self, feature, i):
         center_heatmap_pred = self.heatmap_head(feature).sigmoid()
