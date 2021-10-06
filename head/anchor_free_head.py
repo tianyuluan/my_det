@@ -6,7 +6,7 @@ LastEditors: Luan Tianyu
 email: 1558747541@qq.com
 github: https://github.com/tianyuluan/
 Date: 2021-10-02 21:12:48
-LastEditTime: 2021-10-04 21:02:51
+LastEditTime: 2021-10-06 10:30:38
 motto: Still water run deep
 Description: Modify here please
 FilePath: /my_det/head/anchor_free_head.py
@@ -96,12 +96,30 @@ class AnchorFreeHead(nn.Module):
                 scale_box_w = (gt_bboxes[j][2] - gt_bboxes[j][0]) * w_ratio         
                 radius = gaussian_radius([scale_box_h, scale_box_w], min_overlap=0.3)
                  
-                 radius = max(0, int(radius))
-                 ind = gt_labels[j]
+                radius = max(0, int(radius))
+                ind = gt_labels[j]
+                gen_gaussian_target(center_heatmap_target[batch_id, ind],
+                                                              [ctx_int, cty_int], radius)
+                wh_target[batch_id, 0, cty_int, ctx_int] = scale_box_w
+                wh_target[batch_id, 1, cty_int, ctx_int] = scale_box_h
 
+                offset_target[batch_id, 0, cty_int, cty_int] = ctx - ctx_int
+                offset_target[batch_id, 1, cty_int, cty_int] = cty - cty_int
+
+                wh_offset_target_weight[batch_id, :, cty_int, ctx_int] = 1
+
+    avg_factor = max(1, center_heatmap_target.eq(1).sum())
+    target_result = dict(
+        center_heatmap_target=center_heatmap_target,
+        wh_target=wh_target,
+        offset_target=offset_target,
+        wh_offset_target_weight=wh_offset_target_weight
+    )
+    return target_result, avg_factor
 
 
     def gaussian_radius(self, det_size, min_overlap):
         pass
-    
-    def gen_gaussian_target(self, heatmap, center, radius, k=1)
+
+    def gen_gaussian_target(self, heatmap, center, radius, k=1):
+        pass
