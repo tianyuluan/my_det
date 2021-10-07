@@ -6,7 +6,7 @@ LastEditors: Luan Tianyu
 email: 1558747541@qq.com
 github: https://github.com/tianyuluan/
 Date: 2021-10-02 21:12:48
-LastEditTime: 2021-10-06 10:37:23
+LastEditTime: 2021-10-07 16:30:45
 motto: Still water run deep
 Description: Modify here please
 FilePath: /my_det/head/anchor_free_head.py
@@ -36,8 +36,7 @@ class AnchorFreeHead(nn.Module):
         head = nn.Sequential(
                 nn.Conv2d(in_channel, feat_channel, kernel_size=3, padding=1),
                 nn.ReLU(inplace=True),
-                nn.Conv2d(feat_channel, out_channel, kernel_size=1)
-        )
+                nn.Conv2d(feat_channel, out_channel, kernel_size=1))
         return head
 
     # def init_weights(self, ):
@@ -53,18 +52,18 @@ class AnchorFreeHead(nn.Module):
         return center_heatmap_pred, wh_pred, offset_pred
 
     def loss(self,
-                     center_heatmap_pred,
-                     wh_pred,
-                     offset_pred,
-                     gt_labels,
-                     gt_bboxes):
+        center_heatmap_pred,
+        wh_pred,
+        offset_pred,
+        gt_labels,
+        gt_bboxes):
         pass
 
     def get_targets(self, 
-                                     gt_bboxes,
-                                     gt_labels,
-                                     feature_shape,
-                                     img_shape):
+        gt_bboxes,
+        gt_labels,
+        feature_shape,
+        img_shape):
         img_h, img_w = img_shape[:2]
         bs, _, feature_h, feature_w = feature_shape
 
@@ -111,10 +110,25 @@ class AnchorFreeHead(nn.Module):
         center_heatmap_target=center_heatmap_target,
         wh_target=wh_target,
         offset_target=offset_target,
-        wh_offset_target_weight=wh_offset_target_weight
-    )
+        wh_offset_target_weight=wh_offset_target_weight)
     return target_result, avg_factor
 
+    def get_bboxes(self,
+        center_heatmap_pred,
+        wh_pred,
+        offset_pred,
+        rescale=True,
+        with_nms=False):
+        pass
+
+    def decode_heatmap(self,
+        center_heatmap_pred.
+        wh_pred,
+        offset_pred,
+        img_shape,
+        k=100,
+        kernel=3):
+        pass
 
     def gaussian_radius(self, det_size, min_overlap):
         pass
