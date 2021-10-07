@@ -6,13 +6,14 @@ LastEditors: Luan Tianyu
 email: 1558747541@qq.com
 github: https://github.com/tianyuluan/
 Date: 2021-10-02 21:12:48
-LastEditTime: 2021-10-07 16:30:45
+LastEditTime: 2021-10-07 20:19:10
 motto: Still water run deep
 Description: Modify here please
 FilePath: /my_det/head/anchor_free_head.py
 '''
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 from utils import multi_apply
 from loss import GFocalLoss
 from loss import GIoULoss
@@ -27,7 +28,12 @@ class AnchorFreeHead(nn.Module):
         self.heatmap_head = self._build_head(in_channel, feat_channel, num_classes)
         self.wh_head = self._build_head(in_channel, feat_channel, 2)
         self.offset_head = self._build_head(in_channel, feat_channel, 2)
-
+        self.image_metas = {
+            'ori_shape': (720, 1280, 3),
+            'img_shape': (720, 1280, 3),
+            'pad_shape': (720, 1280, 3),
+            'scale_factor': array([1., 1., 1., 1.], dtype=float32),
+            'batch_input_shape': (720, 1280)}
         self.loss_center_heatmap = GFocalLoss()
         self.loss_iou  = GIoULoss()
         # self.
@@ -119,6 +125,11 @@ class AnchorFreeHead(nn.Module):
         offset_pred,
         rescale=True,
         with_nms=False):
+        assert len(center_heatmap_pred) == len(wh_pred) == len(
+            offset_pred)
+        scale_factors = [image_metas['scale_factors']]
+
+        det
         pass
 
     def decode_heatmap(self,
@@ -128,6 +139,10 @@ class AnchorFreeHead(nn.Module):
         img_shape,
         k=100,
         kernel=3):
+        height, width = center_heatmap_pred.shape[2:]
+        inp_h, inp_w = img_shape
+        center_heatmap_pred = self.get_local_maximum(center_heatmap_pred, kernel=kernel)
+        
         pass
 
     def gaussian_radius(self, det_size, min_overlap):
@@ -135,3 +150,9 @@ class AnchorFreeHead(nn.Module):
 
     def gen_gaussian_target(self, heatmap, center, radius, k=1):
         pass
+
+    def get_local_maximum(self, heat, kernel=3):
+        pad = (kernel -1) // 2
+        hmax = F.max_pool2d(heat, kernel, stride=1, padding=pad)
+        keep = (hmax==heat).float()
+        return heat * keep
