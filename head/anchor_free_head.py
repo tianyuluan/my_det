@@ -6,7 +6,7 @@ LastEditors: Luan Tianyu
 email: 1558747541@qq.com
 github: https://github.com/tianyuluan/
 Date: 2021-10-02 21:12:48
-LastEditTime: 2021-10-07 20:19:10
+LastEditTime: 2021-10-10 21:18:22
 motto: Still water run deep
 Description: Modify here please
 FilePath: /my_det/head/anchor_free_head.py
@@ -142,6 +142,9 @@ class AnchorFreeHead(nn.Module):
         height, width = center_heatmap_pred.shape[2:]
         inp_h, inp_w = img_shape
         center_heatmap_pred = self.get_local_maximum(center_heatmap_pred, kernel=kernel)
+        *batch_dets, topk_ys, topk_xs = self.get_topk_from_heatmap(center_heatmap_pred, k=k)
+        batch_scores, batch_index, batch_topk_labels = batch_dets
+        
         
         pass
 
@@ -156,3 +159,16 @@ class AnchorFreeHead(nn.Module):
         hmax = F.max_pool2d(heat, kernel, stride=1, padding=pad)
         keep = (hmax==heat).float()
         return heat * keep
+
+    def get_topk_from_heatmap(self, heat_map, k=100):
+        """
+        heat_map: [batch, num_class, h, w]
+        k
+        """
+        batch, _, h, w = heat_map.size()
+        topk_scores, topk_inds, = torch.topk(heat_map.view(batch, -1), k)
+        topk_clses = topk_inds // (h * w)
+        topk_inds = topk_inds % (h *w)
+        topk_ys = topk_inds // w
+        topk_xs = (topk_inds % w).int().float()
+        return topk_scores, topk_inds, topk_clses, topk_ys, topk_xs
