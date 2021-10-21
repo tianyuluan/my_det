@@ -6,7 +6,7 @@ LastEditors: Luan Tianyu
 email: 1558747541@qq.com
 github: https://github.com/tianyuluan/
 Date: 2021-10-02 21:12:48
-LastEditTime: 2021-10-10 21:18:22
+LastEditTime: 2021-10-14 20:34:21
 motto: Still water run deep
 Description: Modify here please
 FilePath: /my_det/head/anchor_free_head.py
@@ -149,9 +149,32 @@ class AnchorFreeHead(nn.Module):
         pass
 
     def gaussian_radius(self, det_size, min_overlap):
-        pass
+        height, width = det_size
+        a1 = 1
+        b1 = height * width * (1-min_overlap)/(1+min_overlap)
+        sq1 = sqrt(b1**2 - 4 * a1 * c1)
+        r1 = (b1 - sq1) / (2 * a1)
+
+        a2 = 4
+        b2 = 2 * (height + width)
+        c2 = (1 - min_overlap) * width * height
+        sq2 = sqrt(b2**2 - 4 * a2 * c2)
+        r2 = (b2 - sq2) / (2 * a2)
+
+        a3 = 4 * min_overlap
+        b3 = -2 * min_overlap * (height + width)
+        c3 = (min_overlap - 1) * width * height
+        sq3 = sqrt(b3**2 - 4 * a3 * c3)
+        r3 = (b3 + sq3) / (2 * a3)
+        return min(r1, r2, r3)
 
     def gen_gaussian_target(self, heatmap, center, radius, k=1):
+        diameter = radius * 2  + 1
+        gaussian_kernel = gaussian_2D(
+            radius, sigma = diameter /6, dtype=heatmap.dtype, device=heatmap.device)
+        x, y = center
+        height, width = heatmap.shape[:2]
+        
         pass
 
     def get_local_maximum(self, heat, kernel=3):
@@ -172,3 +195,12 @@ class AnchorFreeHead(nn.Module):
         topk_ys = topk_inds // w
         topk_xs = (topk_inds % w).int().float()
         return topk_scores, topk_inds, topk_clses, topk_ys, topk_xs
+
+    def gaussian_2D(self, radius, sigma=1, dtype=torch.float32, device='cpu'):
+        x = torch.arange(
+            -radius, radius+1, dtype=dtype, device=device).view(1, -1)
+        y= torch.arange(
+            -radius, radius+1, dtype=dtype, device=device).view(1. -1)
+        h = (-(x*x+y*y)/(2*sigma*sigma)).exp()
+        h[h<torch.finfo(h.dtype).eps*h.max()] = 0
+        return h
