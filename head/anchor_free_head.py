@@ -6,7 +6,7 @@ LastEditors: Luan Tianyu
 email: 1558747541@qq.com
 github: https://github.com/tianyuluan/
 Date: 2021-10-02 21:12:48
-LastEditTime: 2021-10-14 20:34:21
+LastEditTime: 2021-11-06 14:22:09
 motto: Still water run deep
 Description: Modify here please
 FilePath: /my_det/head/anchor_free_head.py
@@ -36,7 +36,7 @@ class AnchorFreeHead(nn.Module):
             'batch_input_shape': (720, 1280)}
         self.loss_center_heatmap = GFocalLoss()
         self.loss_iou  = GIoULoss()
-        # self.
+        self.topk = 100
     
     def _build_head(self, in_channel, feat_channel, out_channel):
         head = nn.Sequential(
@@ -128,6 +128,15 @@ class AnchorFreeHead(nn.Module):
         assert len(center_heatmap_pred) == len(wh_pred) == len(
             offset_pred)
         scale_factors = [image_metas['scale_factors']]
+        batch_det_bboxes, batch_labels = self.decode_heatmap(
+            center_heatmap_pred,
+            wh_pred,
+            offset_pred,
+            self.image_metas['batch_input_shape'],
+            k=self.topk,
+            kernel = None)
+        
+        
 
         det
         pass
@@ -144,9 +153,20 @@ class AnchorFreeHead(nn.Module):
         center_heatmap_pred = self.get_local_maximum(center_heatmap_pred, kernel=kernel)
         *batch_dets, topk_ys, topk_xs = self.get_topk_from_heatmap(center_heatmap_pred, k=k)
         batch_scores, batch_index, batch_topk_labels = batch_dets
-        
-        
-        pass
+
+        wh = self.transpose_and_gather_feat(wh_pred, batch_index)
+        offset = self.transpose_and_gather_feat(offset_pred, batch_index)
+        topk_xs = topk_xs + offset[..., 0]
+        topk_ys = topk_ys + offset[..., 1]
+        tl_x = (topk_xs - wh[..., 0]/2) * (inp_w / width)
+        tl_y = (topk_ys - wh[..., 1]/2) * (inp_h / height)
+        br_x = (topk_xs + wh[..., 0]/2) * (inp_w / width)
+        br_y = (topk_ys + wh[..., 1]/2) * (inp_h / height)
+
+        batch_bboxes = torch.stack([tl_x, tl_y, br_x, br_y], dim=2)
+        batch_bboxes = torch.cat((batch_bboxes, batch_scores[..., None]), dim =1 )
+        return batch_bboxes, batch_topk_labels        
+
 
     def gaussian_radius(self, det_size, min_overlap):
         height, width = det_size
@@ -204,3 +224,19 @@ class AnchorFreeHead(nn.Module):
         h = (-(x*x+y*y)/(2*sigma*sigma)).exp()
         h[h<torch.finfo(h.dtype).eps*h.max()] = 0
         return h
+
+    def gather_feat(self, feat, ind, mask=None):
+        dim = feat.size(2)
+        ind = ind.unsqueeze(2).repeat(1,1,dim)
+        feat = feat.gather(1, ind)
+        if mask is not None:
+            mask = mask.unsqueeze(2).expand_as(feat)
+            feat = feat[mask]
+            feat = feat.view(-1, dim)
+        return feat
+
+    def transpose_and_gather_feat(self, feat, ind):
+        feat = feat.permute(0, 2, 3, 1).contiguous()
+        feat = feat.view(feat.size(0), -1, feat.size(3))
+        feat = self.gather_feat(feat, ind)
+        return feat
