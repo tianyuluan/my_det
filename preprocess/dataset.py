@@ -6,7 +6,7 @@ LastEditors: Luan Tianyu
 email: 1558747541@qq.com
 github: https://github.com/tianyuluan/
 Date: 2021-10-04 11:48:54
-LastEditTime: 2022-02-26 14:17:51
+LastEditTime: 2022-02-26 15:11:58
 motto: Still water run deep
 Description: Modify here please
 FilePath: /my_det/preprocess/dataset.py
@@ -120,6 +120,6 @@ class MyDataset(Dataset):
         img_id = np.array([self.ids[index]])
 
         if self.data_aug is not None:
-            img, target = self.data_aug(img, target)
+            img, target = self.data_aug(img, target, self.input_dim)
         return img, target, img_info, img_id
     
